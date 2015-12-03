@@ -4,7 +4,9 @@
 
 #include "data_source.h"
 #include "dispatcher.h"
+#include "light_sensor.h"
 #include "lprintf.h"
+#include "person_sensor.h"
 #include "stop_handler.h"
 
 static int usage(const char *argv0)
@@ -82,11 +84,35 @@ int main(int argc, char *argv[])
 		dispatcher_destroy(disp);
 		return 1;
 	}
+
+	person_sensor *ps;
+	rc = person_sensor_create(&ps, disp, src);
+	if (rc != ok) {
+		fprintf(stderr, "%s: %s\n", argv[0], return_code_string(rc));
+		data_source_destroy(src);
+		stop_handler_destroy(sh);
+		dispatcher_destroy(disp);
+		return 1;
+	}
+	
+	light_sensor *ls;
+	rc = light_sensor_create(&ls, disp, src);
+	if (rc != ok) {
+		fprintf(stderr, "%s: %s\n", argv[0], return_code_string(rc));
+		person_sensor_destroy(ps);
+		data_source_destroy(src);
+		stop_handler_destroy(sh);
+		dispatcher_destroy(disp);
+		return 1;
+	}
+	
 	
 	lprintf(info, "%s: running\n", argv[0]);
 	dispatcher_run(disp);
 	lprintf(info, "%s: shutting down\n", argv[0]);
 
+	light_sensor_destroy(ls);
+	person_sensor_destroy(ps);
 	data_source_destroy(src);
 	stop_handler_destroy(sh);
 	dispatcher_destroy(disp);

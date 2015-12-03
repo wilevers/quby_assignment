@@ -5,9 +5,11 @@ libquby_objs = \
 	data_source.o \
 	data_store.o \
 	dispatcher.o \
+	light_sensor.o \
 	lprintf.o \
 	map.o \
 	message_buffer.o \
+	person_sensor.o \
 	push_lexer.o \
 	push_parser.o \
 	return_code.o \
