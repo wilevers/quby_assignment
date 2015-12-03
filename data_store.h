@@ -16,7 +16,8 @@ int data_store_port(const data_store *store);
 
 const map *data_store_data(const data_store *store);
 return_code data_store_update(data_store *store, const map *src);
-void data_store_disconnect(data_store *store, data_session *sess);
+
+void data_store_stop_session(data_store *store, data_session *sess);
 
 void data_store_destroy(data_store *store);
 

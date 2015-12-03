@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 
 #include "data_session.h"
@@ -106,6 +107,57 @@ return_code data_store_create(data_store **result,
 	return ok;
 }
 
+const char *data_store_ip(const data_store *store)
+{
+	return acceptor_ip(store->acc);
+}
+
+int data_store_port(const data_store *store)
+{
+	return acceptor_port(store->acc);
+}
+
+const map *data_store_data(const data_store *store)
+{
+	return store->data;
+}
+
+return_code data_store_update(data_store *store, const map *src)
+{
+	int n_src_keys = map_get_n_keys(src);
+	int i;
+	for (i = 0; i != n_src_keys; ++i) {
+
+		return_code rc = map_set_value(store->data,
+			map_get_key(src, i), 
+			map_get_value(src, i)
+		);
+		if (rc != ok) {
+			return rc;
+		}
+	}
+
+	return ok;
+}
+		
+void data_store_stop_session(data_store *store, data_session *sess)
+{
+	int i;
+	for (i = 0; i != store->n_sessions; ++i) {
+		if (store->sessions[i] == sess) {
+			break;
+		}
+	}
+
+	assert(i != store->n_sessions);
+	data_session_destroy(sess);
+
+	--store->n_sessions;
+	for (; i != store->n_sessions; ++i) {
+		store->sessions[i] = store->sessions[i + 1];
+	}
+}
+		
 void data_store_destroy(data_store *store)
 {
 	lprintf(info, "closing data store at %s port %d\n",

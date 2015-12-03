@@ -10,9 +10,7 @@ typedef enum {
 	cant_create_socket,
 	cant_bind,
 	cant_listen,
-
 	cant_accept,
-
 	cant_resolve_host,
 	cant_connect,
 	would_block,
@@ -28,6 +26,8 @@ typedef enum {
 	unexpected_end_element,
 	message_type_mismatch,
 	data_key_mismatch,
+	invalid_message_type,
+	key_expected,
 	
 	n_return_codes
 

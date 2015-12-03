@@ -13,6 +13,8 @@ const char *map_get_key(const map *m, int idx);
 const char *map_get_value(const map *m, int idx);
 const char *map_find_value(const map *m, const char *key);
 
+void map_clear(map *m);
+
 void map_destroy(map *m);
 
 #endif

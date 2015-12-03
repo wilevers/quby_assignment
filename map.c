@@ -142,14 +142,19 @@ const char *map_find_value(const map *m, const char *key)
 	return NULL;
 }
 		
-void map_destroy(map *m)
+void map_clear(map *m)
 {
 	int i;
 	for (i = 0; i != m->n_kvpairs_used; ++i) {
 		free(m->kvpairs[i].key);
 		free(m->kvpairs[i].value);
 	}
+	m->n_kvpairs_used = 0;
+}
 
+void map_destroy(map *m)
+{
+	map_clear(m);
 	free(m->kvpairs);
 	free(m);
 }

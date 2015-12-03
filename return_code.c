@@ -49,6 +49,10 @@ const char *return_code_string(return_code code)
 		return "message type mismatch";
 	case data_key_mismatch :
 		return "data key mismatch";
+	case invalid_message_type :
+		return "invalid message type";
+	case key_expected :
+		return "key expected";
 	default :
 		return "unknown return code";
 	}
