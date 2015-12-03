@@ -29,7 +29,7 @@ static void on_accept(void *user_data)
 
 		if (new_sessions == NULL) {
 
-			lprintf(error, "data_store: %s\n",
+			lprintf(fatal, "data_store: %s\n",
 				return_code_string(out_of_memory));
 			dispatcher_stop(store->disp);
 			return;
@@ -42,16 +42,23 @@ static void on_accept(void *user_data)
 	return_code rc = data_session_create(
 		&store->sessions[store->n_sessions],
 		store->disp, store, store->acc);
-	acceptor_activate_io_slot(store->acc, store->disp,
-		store->acc_slot, &on_accept, store);
 
-	if (rc != ok) {
-		lprintf(error, "data_store: can't create session: %s\n",
+	switch (rc) {
+	case ok :
+		++store->n_sessions;
+		break;
+	case would_block :
+		/* just my luck */
+		break;
+	default :
+		lprintf(fatal, "data_store: can't create session: %s\n",
 			return_code_string(rc));
+		dispatcher_stop(store->disp);
 		return;
 	}
-
-	++store->n_sessions;
+		
+	acceptor_activate_io_slot(store->acc, store->disp,
+		store->acc_slot, &on_accept, store);
 }
 
 return_code data_store_create(data_store **result,

@@ -117,8 +117,14 @@ return_code acceptor_accept_nonblocking(acceptor *acc, connection **result)
 {
 	int fd = accept4(acc->fd, NULL, NULL, SOCK_CLOEXEC);
 	if (fd == -1) {
+/*
 		return errno == EAGAIN || errno == EWOULDBLOCK ?
 			would_block : cant_accept;
+
+		Follow Linux man page advice: treat every failure here
+		as non-fatal for the acceptor:
+ */
+		return would_block;
 	}
 
 	return connection_consume_internal(result, fd);
