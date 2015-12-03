@@ -1,0 +1,6 @@
+*.o
+*.o.dep
+*.ok
+*.a
+*_test
+server
