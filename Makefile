@@ -2,6 +2,7 @@ libquby_objs = \
 	acceptor.o \
 	connection.o \
 	data_session.o \
+	data_source.o \
 	data_store.o \
 	dispatcher.o \
 	lprintf.o \
