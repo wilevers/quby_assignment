@@ -3,4 +3,5 @@
 *.ok
 *.a
 *_test
+client
 server

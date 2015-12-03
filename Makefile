@@ -21,6 +21,7 @@ tests = \
 	return_code_test
 
 executables = \
+	client \
 	server
 
 gcc_flags = -Wall -Werror
@@ -50,6 +51,7 @@ $1: $1.o $2 ; \
 endef
 
 $(call define_executable, alarm_slot_test, libquby.a)
+$(call define_executable, client, libquby.a)
 $(call define_executable, connection_test, libquby.a)
 $(call define_executable, map_test, libquby.a)
 $(call define_executable, server, libquby.a)

@@ -33,7 +33,7 @@ static void on_alarm(void *user_data)
 	return_code rc = message_buffer_add_begin_message(
 		src->buffer, "update");
 	if (rc != ok) {
-		lprintf(fatal, "data_source for %s %d: %s\n",
+		lprintf(fatal, "data source for %s %d: %s\n",
 			src->target_host, src->target_port, 
 			return_code_string(rc));
 		dispatcher_stop(src->disp);
@@ -47,7 +47,7 @@ static void on_alarm(void *user_data)
 			map_get_key(src->data, i),
 			map_get_value(src->data, i));
 		if (rc != ok) {
-			lprintf(fatal, "data_source for %s %d: %s\n",
+			lprintf(fatal, "data source for %s %d: %s\n",
 				src->target_host, src->target_port, 
 				return_code_string(rc));
 			dispatcher_stop(src->disp);
@@ -57,7 +57,7 @@ static void on_alarm(void *user_data)
 
 	rc = message_buffer_add_end_message(src->buffer, "update");
 	if (rc != ok) {
-		lprintf(fatal, "data_source for %s %d: %s\n",
+		lprintf(fatal, "data source for %s %d: %s\n",
 			src->target_host, src->target_port, 
 			return_code_string(rc));
 		dispatcher_stop(src->disp);
@@ -68,7 +68,7 @@ static void on_alarm(void *user_data)
 	rc = connection_create(&src->conn,
 		src->target_host, src->target_port);
 	if (rc != ok) {
-		lprintf(warning, "data_source for %s %d: %s\n",
+		lprintf(warning, "data source for %s %d: %s\n",
 			src->target_host, src->target_port, 
 			return_code_string(rc));
 		message_buffer_discard(src->buffer,
@@ -104,7 +104,7 @@ static void on_output(void *user_data)
 		/* huh? */
 		break;
 	default :
-		lprintf(warning, "data_source for %s %d: %s\n",
+		lprintf(warning, "data source for %s %d: %s\n",
 			src->target_host, src->target_port, 
 			return_code_string(rc));
 		message_buffer_discard(src->buffer, size);
@@ -112,11 +112,18 @@ static void on_output(void *user_data)
 	}
 
 	if (message_buffer_size(src->buffer) == 0) {
+
+		lprintf(info, "data source for %s %d: %s\n",
+			src->target_host, src->target_port, 
+			"updates sent");
+
 		connection_destroy(src->conn);
 		src->conn = NULL;
 		dispatcher_activate_alarm_slot(src->disp,
 			src->alarm, send_interval, &on_alarm, src);
+
 	} else {
+
 		connection_activate_io_slot(src->conn, src->disp,
 			src->output_slot, output, &on_output, src);
 	}
@@ -195,7 +202,7 @@ return_code data_source_create(data_source **result,
 		src->alarm, send_interval,
 		&on_alarm, src);
 
-	lprintf(info, "created data_source for %s %d\n",
+	lprintf(info, "created data source for %s %d\n",
 		src->target_host, src->target_port);
 
 	*result = src;
@@ -204,7 +211,7 @@ return_code data_source_create(data_source **result,
 
 void data_source_destroy(data_source *src)
 {
-	lprintf(info, "destroying data_source for %s %d\n",
+	lprintf(info, "destroying data source for %s %d\n",
 		src->target_host, src->target_port);
 
 	if (src->conn != NULL) {
