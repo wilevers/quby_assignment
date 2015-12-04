@@ -29,6 +29,8 @@ const char *return_code_string(return_code code)
 		return "can't send";
 	case cant_receive :
 		return "can't receive";
+	case cant_await_events :
+		return "can't await events";
 	case unexpected_null_char :
 		return "unexpected null character";
 	case unexpected_gt :

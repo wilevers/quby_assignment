@@ -16,6 +16,7 @@ typedef enum {
 	would_block,
 	cant_send,
 	cant_receive,
+	cant_await_events,
 	unexpected_null_char,
 	unexpected_gt,
 	unexpected_whitespace,

@@ -189,7 +189,7 @@ static void remove_alarm_slot(dispatcher *disp, alarm_slot *slot)
 	}
 }
 	
-static void await_events(dispatcher *disp)
+static return_code await_events(dispatcher *disp)
 {
 	timepoint now;
 	timepoint_now(&now);
@@ -226,8 +226,11 @@ static void await_events(dispatcher *disp)
 
 	int r = poll(disp->pfds, n_pfds, timeout);
 	if (r < 0) {
-		assert(errno == EINTR);
-		r = 0;
+		if (errno == EINTR) {
+			r = 0;
+		} else {
+			return cant_await_events;
+		}
 	}
 
 	int idx = 0;
@@ -254,6 +257,8 @@ static void await_events(dispatcher *disp)
 		! timepoint_less(&now, &disp->first_active_alarm->tp)) {
 		disp->first_active_alarm = disp->first_active_alarm->next;
 	}
+
+	return ok;
 }
 
 return_code dispatcher_create(dispatcher **result)
@@ -459,7 +464,7 @@ return_code dispatcher_run(dispatcher *disp)
 
 		} else {
 
-			await_events(disp);
+			rc = await_events(disp);
 		}
 	}
 
