@@ -95,10 +95,10 @@ int acceptor_port(const acceptor *acc)
 
 void acceptor_activate_io_slot(acceptor *acc,
 	dispatcher *disp, io_slot *slot,
-	void (*callback)(void *), void *user_data)
+	return_code (*callback)(void *), void *callback_arg)
 {
 	dispatcher_activate_io_slot(disp, slot,
-		acc->fd, input, callback, user_data);
+		acc->fd, input, callback, callback_arg);
 }
 
 return_code acceptor_accept_blocking(acceptor *acc, connection **result)

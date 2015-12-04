@@ -105,7 +105,10 @@ int main(int argc, char *argv[])
 
 	lprintf(info, "%s: running\n", argv[0]);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	if (rc != ok) {
+		lprintf(fatal, "%s: %s\n", argv[0], return_code_string(rc));
+	}
 
 	lprintf(info, "%s: cleaning up\n", argv[0]);
 
@@ -115,5 +118,5 @@ int main(int argc, char *argv[])
 
 	lprintf(info, "%s: done\n", argv[0]);
 
-	return 0;
+	return rc == ok ? 0 : 1;
 }

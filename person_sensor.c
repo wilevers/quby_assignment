@@ -10,7 +10,7 @@ struct person_sensor {
 	int count;
 };
 
-static void on_alarm(void *user_data)
+static return_code on_alarm(void *user_data)
 {
 	person_sensor *sensor = user_data;
 	++sensor->count;
@@ -18,16 +18,15 @@ static void on_alarm(void *user_data)
 	return_code rc = data_source_set_integer_value(sensor->src,
 		"personsPassed", sensor->count);
 	if (rc != ok) {
-		lprintf(fatal, "person sensor: %s\n",
-			return_code_string(rc));
-		dispatcher_stop(sensor->disp);
-		return;
+		return rc;
 	}
 
 	lprintf(info, "person reported\n");
 
 	dispatcher_activate_alarm_slot(sensor->disp, sensor->alarm,
 		((rand() % 10) + 1) * 1000, &on_alarm, sensor);
+
+	return ok;
 }
 
 return_code person_sensor_create(person_sensor **result,

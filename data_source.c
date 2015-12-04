@@ -22,9 +22,9 @@ struct data_source {
 	connection *conn; /* NULL when sleeping, non-NULL when sending */
 };
 
-static void on_output(void *user_data);
+static return_code on_output(void *user_data);
 
-static void on_alarm(void *user_data)
+static return_code on_alarm(void *user_data)
 {
 	data_source *src = user_data;
 
@@ -33,11 +33,7 @@ static void on_alarm(void *user_data)
 	return_code rc = message_buffer_add_begin_message(
 		src->buffer, "update");
 	if (rc != ok) {
-		lprintf(fatal, "data source for %s %d: %s\n",
-			src->target_host, src->target_port, 
-			return_code_string(rc));
-		dispatcher_stop(src->disp);
-		return;
+		return rc;
 	}
 
 	int n_data_keys = map_get_n_keys(src->data);
@@ -47,21 +43,13 @@ static void on_alarm(void *user_data)
 			map_get_key(src->data, i),
 			map_get_value(src->data, i));
 		if (rc != ok) {
-			lprintf(fatal, "data source for %s %d: %s\n",
-				src->target_host, src->target_port, 
-				return_code_string(rc));
-			dispatcher_stop(src->disp);
-			return;
+			return rc;
 		}
 	}
 
 	rc = message_buffer_add_end_message(src->buffer, "update");
 	if (rc != ok) {
-		lprintf(fatal, "data source for %s %d: %s\n",
-			src->target_host, src->target_port, 
-			return_code_string(rc));
-		dispatcher_stop(src->disp);
-		return;
+		return rc;
 	}
 
 	assert(src->conn == NULL);
@@ -82,9 +70,11 @@ static void on_alarm(void *user_data)
 		connection_activate_io_slot(src->conn, src->disp,
 			src->output_slot, output, &on_output, src);
 	}
+
+	return ok;
 }
 
-static void on_output(void *user_data)
+static return_code on_output(void *user_data)
 {
 	data_source *src = user_data;
 	
@@ -127,6 +117,8 @@ static void on_output(void *user_data)
 		connection_activate_io_slot(src->conn, src->disp,
 			src->output_slot, output, &on_output, src);
 	}
+
+	return ok;
 }
 		
 return_code data_source_set_string_value(data_source *src,

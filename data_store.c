@@ -15,7 +15,7 @@ struct data_store {
 	int n_sessions_alloc;
 };
 
-static void on_accept(void *user_data)
+static return_code on_accept(void *user_data)
 {
 	data_store *store = user_data;
 
@@ -29,11 +29,7 @@ static void on_accept(void *user_data)
 				sizeof *new_sessions * new_alloc);
 
 		if (new_sessions == NULL) {
-
-			lprintf(fatal, "data_store: %s\n",
-				return_code_string(out_of_memory));
-			dispatcher_stop(store->disp);
-			return;
+			return out_of_memory;
 		}
 
 		store->n_sessions_alloc = new_alloc;
@@ -52,14 +48,14 @@ static void on_accept(void *user_data)
 		/* just my luck */
 		break;
 	default :
-		lprintf(fatal, "data_store: can't create session: %s\n",
-			return_code_string(rc));
-		dispatcher_stop(store->disp);
-		return;
+		return rc;
+		break;
 	}
 		
 	acceptor_activate_io_slot(store->acc, store->disp,
 		store->acc_slot, &on_accept, store);
+
+	return ok;
 }
 
 return_code data_store_create(data_store **result,

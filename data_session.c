@@ -26,7 +26,7 @@ struct data_session {
 	message_buffer *output_buffer;
 };
 
-static void on_input(void *user_data)
+return_code on_input(void *user_data)
 {
 	data_session *sess = user_data;
 
@@ -47,7 +47,7 @@ static void on_input(void *user_data)
 				"disconnected by peer"
 			);
 			data_store_stop_session(sess->store, sess);
-			return;
+			return ok;
 		}
 
 		rc = push_parser_push(sess->parser, buf, bytes_received);
@@ -60,7 +60,7 @@ static void on_input(void *user_data)
 				return_code_string(rc)
 			);
 			data_store_stop_session(sess->store, sess);
-			return;
+			return ok;
 		}
 			
 		break;
@@ -78,16 +78,18 @@ static void on_input(void *user_data)
 			return_code_string(rc)
 		);
 		data_store_stop_session(sess->store, sess);
-		return;
+		return ok;
 	}
 
 	if (message_buffer_size(sess->output_buffer) == 0) {
 		connection_activate_io_slot(sess->conn, sess->disp,
 			sess->input_slot, input, &on_input, sess);
 	}
+
+	return ok;
 }		
 
-static void on_output(void *user_data)
+return_code on_output(void *user_data)
 {
 	data_session *sess = user_data;
 
@@ -120,7 +122,7 @@ static void on_output(void *user_data)
 				connection_remote_port(sess->conn),
 				return_code_string(rc));
 			data_store_stop_session(sess->store, sess);
-			return;
+			return ok;
 		}
 
 		size = message_buffer_size(sess->output_buffer);
@@ -133,6 +135,8 @@ static void on_output(void *user_data)
 		connection_activate_io_slot(sess->conn, sess->disp,
 			sess->input_slot, input, &on_input, sess);
 	}
+
+	return ok;
 }
 		
 static return_code send_status(data_session *sess, const map *query)

@@ -108,7 +108,12 @@ int main(int argc, char *argv[])
 	
 	
 	lprintf(info, "%s: running\n", argv[0]);
-	dispatcher_run(disp);
+
+	rc = dispatcher_run(disp);
+	if (rc != ok) {
+		lprintf(fatal, "%s: %s\n", argv[0], return_code_string(rc));
+	}
+
 	lprintf(info, "%s: shutting down\n", argv[0]);
 
 	light_sensor_destroy(ls);
@@ -117,5 +122,5 @@ int main(int argc, char *argv[])
 	stop_handler_destroy(sh);
 	dispatcher_destroy(disp);
 
-	return 0;
+	return rc == ok ? 0 : 1;
 }

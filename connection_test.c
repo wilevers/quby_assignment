@@ -92,7 +92,7 @@ static void echo_test()
 
 	int received = 42;
 	rc = connection_receive_blocking(client, &received, inbuf, bufsize);
-	assert(rc == 0);
+	assert(rc == ok);
 	assert(received == 0);
 
 	connection_destroy(client);

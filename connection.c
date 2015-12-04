@@ -116,10 +116,10 @@ int connection_remote_port(const connection *conn)
 
 void connection_activate_io_slot(connection *conn, 
 	dispatcher *disp, io_slot *slot, 
-	io_mode mode, void (*callback)(void *), void *user_data)
+	io_mode mode, return_code (*callback)(void *), void *callback_arg)
 {
 	dispatcher_activate_io_slot(disp, slot, conn->fd, mode,
-		callback, user_data);
+		callback, callback_arg);
 }
 
 return_code connection_send_blocking(connection *conn,

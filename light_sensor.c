@@ -12,7 +12,7 @@ struct light_sensor {
 	condition cond;
 };
 
-static void on_alarm(void *user_data)
+static return_code on_alarm(void *user_data)
 {
 	light_sensor *sensor = user_data;
 	
@@ -30,16 +30,15 @@ static void on_alarm(void *user_data)
 	return_code rc = data_source_set_string_value(sensor->src,
 		"lightCondition", report);
 	if (rc != ok) {
-		lprintf(fatal, "light sensor: %s\n",
-			return_code_string(rc));
-		dispatcher_stop(sensor->disp);
-		return;
+		return rc;
 	}
 
 	lprintf(info, "light condition reported\n");
 
 	dispatcher_activate_alarm_slot(sensor->disp, sensor->alarm,
 		((rand() % 15) + 1) * 1000, &on_alarm, sensor);
+
+	return ok;
 }
 
 return_code light_sensor_create(light_sensor **result,

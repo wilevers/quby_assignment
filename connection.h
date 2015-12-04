@@ -18,8 +18,8 @@ const char *connection_remote_ip(const connection *conn);
 int connection_remote_port(const connection *conn);
 
 void connection_activate_io_slot(connection *conn,
-	dispatcher *disp, io_slot *slot,
-	io_mode mode, void (*callback)(void *), void *user_data);
+	dispatcher *disp, io_slot *slot, io_mode mode,
+	return_code (*callback)(void *), void *callback_arg);
 
 return_code connection_send_blocking(connection *conn,
 	int *bytes_sent, const char *data, int max_bytes);

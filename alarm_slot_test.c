@@ -18,9 +18,10 @@ static void test_no_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	dispatcher_destroy(disp);
 }
@@ -29,64 +30,70 @@ static void test_no_active_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm = NULL;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 	assert(alarm != NULL);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	dispatcher_destroy_alarm_slot(disp, alarm);
 	dispatcher_destroy(disp);
 }
 
-static void fail(void *user_data)
+static return_code fail(void *user_data)
 {
 	assert(0);
+	return ok;
 }
 
 static void test_deactivate_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	dispatcher_activate_alarm_slot(disp, alarm, 0, &fail, NULL);
 	dispatcher_deactivate_alarm_slot(disp, alarm);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	dispatcher_destroy_alarm_slot(disp, alarm);
 	dispatcher_destroy(disp);
 }	
 
-static void increment_int(void *user_data)
+static return_code increment_int(void *user_data)
 {
 	int *i = user_data;
 	++(*i);
+
+	return ok;
 }
 
 static void test_immediate_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	int counter = 0;
 	dispatcher_activate_alarm_slot(disp, alarm, 0, &increment_int,
 		&counter);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(counter == 1);
 	
@@ -98,17 +105,18 @@ static void test_delayed_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	int counter = 0;
 	dispatcher_activate_alarm_slot(disp, alarm, 100,
 		&increment_int, &counter);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(counter == 1);
 	
@@ -120,22 +128,25 @@ static void test_stopped_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	int counter = 0;
 	dispatcher_activate_alarm_slot(disp, alarm, 0, &increment_int,
 		&counter);
 
 	dispatcher_stop(disp);
-	dispatcher_run(disp);
+
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(counter == 0);
 	
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(counter == 1);
 	
@@ -149,7 +160,7 @@ typedef struct {
 	int counter;
 } reactivate_data;
 
-static void reactivate(void *user_data)
+static return_code reactivate(void *user_data)
 {
 	reactivate_data *data = user_data;
 
@@ -158,17 +169,19 @@ static void reactivate(void *user_data)
 		dispatcher_activate_alarm_slot(
 			data->disp, data->alarm, 20, &reactivate, data);
 	}
+
+	return ok;
 }	
 
 static void test_reactivate_alarm()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm;
 	rc = dispatcher_create_alarm_slot(disp, &alarm);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	reactivate_data data;
 	data.disp = disp;
@@ -177,7 +190,8 @@ static void test_reactivate_alarm()
 
 	dispatcher_activate_alarm_slot(disp, alarm, 20, &reactivate, &data);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(data.counter == 0);
 
@@ -189,15 +203,15 @@ void test_multiple_alarms()
 {
 	dispatcher *disp;
 	return_code rc = dispatcher_create(&disp);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm1;
 	rc = dispatcher_create_alarm_slot(disp, &alarm1);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	alarm_slot *alarm2;
 	rc = dispatcher_create_alarm_slot(disp, &alarm2);
-	assert(rc == 0);
+	assert(rc == ok);
 
 	int counter = 0;
 
@@ -206,7 +220,8 @@ void test_multiple_alarms()
 	dispatcher_activate_alarm_slot(disp, alarm2,
 		20, &increment_int, &counter);
 
-	dispatcher_run(disp);
+	rc = dispatcher_run(disp);
+	assert(rc == ok);
 
 	assert(counter == 2);
 

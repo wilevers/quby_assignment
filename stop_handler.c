@@ -34,7 +34,7 @@ static void signal_handler(int sig)
 	errno = saved_errno;
 }
 
-static void input_handler(void *user_data)
+static return_code input_handler(void *user_data)
 {
 	stop_handler *sh = user_data;
 
@@ -42,17 +42,26 @@ static void input_handler(void *user_data)
 	int bytes_received = 0;
 	return_code rc = connection_receive_nonblocking(
 		sh->receiver, &bytes_received, &c, sizeof c);
-
-	if (rc == ok && bytes_received == sizeof c) {
-
+	
+	switch (rc) {
+	case ok :
+		assert(bytes_received == sizeof c);
 		int sig = c;
 		lprintf(info, "%s: detected signal %d: stopping dispatcher\n",
 			__FILE__, sig);
 		dispatcher_stop(sh->disp);
+		break;
+	case would_block :
+		break;
+	default :
+		return rc;
+		break;
 	}
 
 	connection_activate_io_slot(sh->receiver, sh->disp,
 		sh->receiver_slot, input, &input_handler, sh);
+
+	return ok;
 }
 
 return_code stop_handler_create(stop_handler **result, dispatcher *disp)

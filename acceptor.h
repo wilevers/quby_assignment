@@ -15,7 +15,7 @@ int acceptor_port(const acceptor *acceptor);
 
 void acceptor_activate_io_slot(acceptor *acc,
 	dispatcher *disp, io_slot *slot,
-	void (*callback)(void *), void *user_data);
+	return_code (*callback)(void *), void *callback_arg);
 
 return_code acceptor_accept_blocking(acceptor *acc, connection **result);
 return_code acceptor_accept_nonblocking(acceptor *acc, connection **result);

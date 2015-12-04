@@ -16,16 +16,16 @@ typedef struct {
 struct io_slot {
 	int fd;
 	io_mode mode;
-	void (*callback)(void *);
-	void *user_data;
+	return_code (*callback)(void *);
+	void *callback_arg;
 	io_slot *prev;
 	io_slot *next;
 };
 
 struct alarm_slot {
 	timepoint tp;
-	void (*callback)(void *);
-	void *user_data;
+	return_code (*callback)(void *);
+	void *callback_arg;
 	alarm_slot *prev;
 	alarm_slot *next;
 };
@@ -308,7 +308,7 @@ return_code dispatcher_create_io_slot(dispatcher *disp, io_slot **result)
 	slot->fd = -1;
 	slot->mode = input;
 	slot->callback = NULL;
-	slot->user_data = NULL;
+	slot->callback_arg = NULL;
 
 	insert_io_slot(slot, disp, NULL);
 	
@@ -325,15 +325,16 @@ return_code dispatcher_create_io_slot(dispatcher *disp, io_slot **result)
 	return ok;
 }
 
-void dispatcher_activate_io_slot(dispatcher *disp, io_slot *slot,
-	int fd, io_mode mode, void (*callback)(void *), void *user_data)
+void dispatcher_activate_io_slot(dispatcher *disp,
+	io_slot *slot, int fd, io_mode mode,
+	return_code (*callback)(void *), void *callback_arg)
 {
 	remove_io_slot(disp, slot);
 
 	slot->fd = fd;
 	slot->mode = mode;
 	slot->callback = callback;
-	slot->user_data = user_data;
+	slot->callback_arg = callback_arg;
 
 	insert_io_slot(slot, disp, disp->first_inactive_io);
 
@@ -374,7 +375,7 @@ return_code dispatcher_create_alarm_slot(dispatcher *disp,
 
 	timepoint_zero(&slot->tp);
 	slot->callback = NULL;
-	slot->user_data = NULL;
+	slot->callback_arg = NULL;
 
 	insert_alarm_slot(slot, disp, NULL);
 
@@ -391,14 +392,14 @@ return_code dispatcher_create_alarm_slot(dispatcher *disp,
 
 void dispatcher_activate_alarm_slot(dispatcher *disp,
 	alarm_slot *slot, unsigned int msecs,
-	void (*callback)(void *), void *user_data)
+	return_code (*callback)(void *), void *callback_arg)
 {
 	remove_alarm_slot(disp, slot);
 
 	timepoint_now(&slot->tp);
 	timepoint_add(&slot->tp, msecs);
 	slot->callback = callback;
-	slot->user_data = user_data;
+	slot->callback_arg = callback_arg;
 
 	alarm_slot *next;
 	for (next = disp->first_active_alarm;
@@ -434,9 +435,11 @@ void dispatcher_destroy_alarm_slot(dispatcher *disp, alarm_slot *slot)
 	free(slot);
 }
 
-void dispatcher_run(dispatcher *disp)
+return_code dispatcher_run(dispatcher *disp)
 {
-	while (! disp->stopping &&
+	return_code rc = ok;
+
+	while (rc == ok && ! disp->stopping &&
 		(disp->first_io != disp->first_inactive_io ||
 		disp->first_alarm != disp->first_inactive_alarm)) {
 		
@@ -446,13 +449,13 @@ void dispatcher_run(dispatcher *disp)
 		if ((io = disp->first_io) != disp->first_active_io) {
 
 			dispatcher_deactivate_io_slot(disp, io);
-			(*io->callback)(io->user_data);
+			rc = (*io->callback)(io->callback_arg);
 
 		} else if ((alarm = disp->first_alarm) != 
 			disp->first_active_alarm) {
 
 			dispatcher_deactivate_alarm_slot(disp, alarm);
-			(*alarm->callback)(alarm->user_data);
+			rc = (*alarm->callback)(alarm->callback_arg);
 
 		} else {
 
@@ -461,6 +464,8 @@ void dispatcher_run(dispatcher *disp)
 	}
 
 	disp->stopping = 0;
+
+	return rc;
 }
 
 void dispatcher_stop(dispatcher *disp)
